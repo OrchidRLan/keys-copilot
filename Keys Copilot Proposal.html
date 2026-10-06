@@ -1,0 +1,720 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Keys Copilot Proposal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: single reading column (~72ch) with wide tables/diagrams allowed to scroll; a lit-keys strip as the header motif. */
+:root {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --fg: #1b2230;
+  --muted: #5a6475;
+  --line: #dde1e8;
+  --accent: #2b4fd8;
+  --lit: #f2a516;
+  --lit-soft: #fdf1d8;
+  --lit-faint: #f8dfa6;
+  --root: #e8562a;
+  --held: #4a7bff;
+  --ok: #2f9e5a;
+  --bad: #d63a3f;
+  --on-lit: #1b2230;
+  --on-held: #ffffff;
+  --risk-hi: #c2412d;
+  --risk-md: #b7791f;
+  --risk-lo: #3f7d4e;
+  --key-white: #ffffff;
+  --key-black: #1b2230;
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12161e; --surface: #1a2029; --fg: #e5e9f0; --muted: #9aa4b5; --line: #2c3442;
+    --accent: #8ea6ff; --lit: #f5b73b; --lit-soft: #3a2e14; --lit-faint: #5a4519;
+    --root: #ff7f50; --held: #7aa2ff; --ok: #57c27a; --bad: #ff6b6f;
+    --on-lit: #1b2230; --on-held: #0b0e13;
+    --risk-hi: #ef7a66; --risk-md: #e0a94a; --risk-lo: #7cc28d;
+    --key-white: #e9edf3; --key-black: #0b0e13; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12161e; --surface: #1a2029; --fg: #e5e9f0; --muted: #9aa4b5; --line: #2c3442;
+  --accent: #8ea6ff; --lit: #f5b73b; --lit-soft: #3a2e14; --lit-faint: #5a4519;
+  --root: #ff7f50; --held: #7aa2ff; --ok: #57c27a; --bad: #ff6b6f;
+  --on-lit: #1b2230; --on-held: #0b0e13;
+  --risk-hi: #ef7a66; --risk-md: #e0a94a; --risk-lo: #7cc28d;
+  --key-white: #e9edf3; --key-black: #0b0e13; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg);
+  font: 16px/1.6 var(--font-body);
+  padding-inline: 20px; padding-block: 0 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 48px; }
+header { padding-top: 48px; display: flex; flex-direction: column; gap: 16px; }
+.eyebrow { font: 500 12px/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+h1 { font: 700 clamp(36px, 7vw, 56px)/1.05 var(--font-display); margin: 0; text-wrap: balance; letter-spacing: -.01em; }
+h2 { font: 700 26px/1.2 var(--font-display); margin: 0 0 12px; text-wrap: balance; }
+h3 { font: 600 17px/1.3 var(--font-body); margin: 20px 0 6px; }
+p { margin: 0 0 12px; max-width: 70ch; }
+.lede { font-size: 19px; color: var(--fg); max-width: 62ch; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px 24px; font: 14px/1.4 var(--font-body); color: var(--muted); }
+.meta b { color: var(--fg); font-weight: 600; }
+.keys { width: 100%; max-width: 520px; height: auto; display: block; }
+.keys .w { fill: var(--key-white); stroke: var(--line); }
+.keys .b { fill: var(--key-black); }
+.keys .lit { fill: var(--lit); }
+.keys .root { fill: var(--root); }
+.keys .held { fill: var(--held); }
+.keys text { fill: var(--muted); font: 500 10px var(--font-mono); }
+.keys .nm { fill: var(--on-lit); font: 600 12px var(--font-mono); }
+.keys .nm.bold { font-weight: 700; }
+.keys .nm.on-held { fill: var(--on-held); }
+.keys .chord { fill: var(--fg); font: 700 13px var(--font-mono); }
+code, .mono { font-family: var(--font-mono); font-size: .9em; }
+code { background: var(--lit-soft); padding: 1px 5px; border-radius: 4px; }
+.thesis { border-left: 3px solid var(--lit); padding: 4px 0 4px 16px; font-size: 18px; max-width: 64ch; }
+.parts { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.part { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; min-width: 0; }
+.part .tag { font: 600 12px/1 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--accent); }
+.part h3 { margin: 8px 0 6px; }
+.part p { margin: 0; font-size: 15px; }
+.tbl { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+th, td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+th { font: 600 12px/1.3 var(--font-mono); letter-spacing: .04em; text-transform: uppercase; color: var(--muted); background: var(--bg); }
+tr:last-child td { border-bottom: 0; }
+td:first-child { font-weight: 500; }
+.pill { display: inline-block; font: 600 11px/1 var(--font-mono); padding: 4px 7px; border-radius: 99px; border: 1px solid currentColor; white-space: nowrap; }
+.hi { color: var(--risk-hi); } .md { color: var(--risk-md); } .lo { color: var(--risk-lo); }
+.sw { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; margin-right: 8px; border: 1px solid var(--line); }
+.sw.root { background: var(--root); } .sw.lit { background: var(--lit); } .sw.faint { background: var(--lit-faint); }
+.sw.held { background: var(--held); } .sw.ok { background: var(--ok); } .sw.bad { background: var(--bad); }
+ol, ul { margin: 0 0 12px; padding-left: 22px; max-width: 70ch; }
+li { margin-bottom: 6px; }
+pre.mermaid, pre.code { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; overflow-x: auto; margin: 0 0 12px; }
+pre.code { font: 13px/1.5 var(--font-mono); }
+.questions { background: var(--lit-soft); border-radius: 10px; padding: 20px 22px; }
+.questions h2 { margin-bottom: 8px; }
+.questions li { margin-bottom: 10px; }
+.phase { display: grid; grid-template-columns: 64px 1fr auto; gap: 4px 16px; padding: 12px 0; border-bottom: 1px solid var(--line); align-items: start; }
+.phase:last-child { border-bottom: 0; }
+.phase .n { font: 600 13px/1.6 var(--font-mono); color: var(--accent); }
+.phase > div { min-width: 0; }
+.phase b { display: block; }
+.phase span { color: var(--muted); font-size: 14.5px; }
+@media (max-width: 520px) { .phase { grid-template-columns: 48px 1fr; } .phase .pill { grid-column: 2; justify-self: start; } }
+.refs li { font-size: 14px; }
+a { color: var(--accent); }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+footer { color: var(--muted); font-size: 13px; }
+section { scroll-margin-top: 24px; }
+.doc-nav-toggle,
+.doc-nav-step {
+  border: 1px solid var(--line); border-radius: 999px; background: color-mix(in srgb, var(--surface) 94%, transparent);
+  color: var(--fg); font: 600 13px/1 var(--font-body); box-shadow: 0 5px 22px rgba(18, 27, 45, .13);
+  cursor: pointer; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+}
+.doc-nav-toggle { position: fixed; z-index: 41; top: max(16px, env(safe-area-inset-top)); right: 18px; padding: 11px 15px; }
+.doc-nav-toggle:hover, .doc-nav-step:hover { border-color: var(--accent); color: var(--accent); }
+.doc-nav-toggle[aria-expanded="true"] { background: var(--accent); color: var(--surface); border-color: var(--accent); }
+.doc-nav-panel {
+  position: fixed; z-index: 40; top: max(62px, calc(env(safe-area-inset-top) + 48px)); right: 18px;
+  width: min(360px, calc(100vw - 36px)); max-height: calc(100vh - 84px); overflow: auto;
+  padding: 14px; border: 1px solid var(--line); border-radius: 14px; background: color-mix(in srgb, var(--surface) 97%, transparent);
+  box-shadow: 0 16px 48px rgba(18, 27, 45, .2); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+}
+.doc-nav-panel h2 { font-size: 17px; margin: 2px 4px 10px; }
+.doc-nav-list { list-style: none; margin: 0; padding: 0; max-width: none; }
+.doc-nav-list li { margin: 0; }
+.doc-nav-list a {
+  display: block; padding: 7px 10px; border-radius: 8px; color: var(--muted); text-decoration: none;
+  font-size: 13px; line-height: 1.3;
+}
+.doc-nav-list a:hover { color: var(--accent); background: var(--lit-soft); }
+.doc-nav-list a[aria-current="location"] { color: var(--fg); background: var(--lit-soft); font-weight: 600; box-shadow: inset 3px 0 var(--lit); }
+.doc-nav-progress { height: 3px; margin: 2px 4px 12px; overflow: hidden; border-radius: 99px; background: var(--line); }
+.doc-nav-progress span { display: block; width: 0; height: 100%; background: var(--accent); transition: width .15s linear; }
+.doc-nav-controls { position: fixed; z-index: 39; right: 18px; bottom: max(18px, env(safe-area-inset-bottom)); display: flex; gap: 7px; }
+.doc-nav-step { width: 39px; height: 39px; padding: 0; font-size: 17px; }
+.doc-nav-step:disabled { opacity: .38; cursor: default; }
+.doc-nav-scrim { position: fixed; z-index: 38; inset: 0; background: rgba(10, 15, 25, .22); }
+@media (min-width: 1200px) {
+  .doc-nav-panel { right: max(18px, calc((100vw - 1180px) / 2)); }
+  .doc-nav-toggle, .doc-nav-controls { right: max(18px, calc((100vw - 1180px) / 2)); }
+}
+@media (max-width: 640px) {
+  .doc-nav-panel { top: max(58px, calc(env(safe-area-inset-top) + 44px)); max-height: calc(100vh - 76px); }
+  .doc-nav-toggle { top: max(12px, env(safe-area-inset-top)); right: 12px; }
+  .doc-nav-panel, .doc-nav-controls { right: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto !important; }
+  .doc-nav-progress span { transition: none; }
+}
+</style>
+
+<button class="doc-nav-toggle" type="button" aria-expanded="false" aria-controls="doc-nav-panel">☰ Sections</button>
+<div class="doc-nav-scrim" hidden></div>
+<nav class="doc-nav-panel" id="doc-nav-panel" aria-label="Document sections" hidden>
+  <h2>Jump to a section</h2>
+  <div class="doc-nav-progress" aria-hidden="true"><span></span></div>
+  <ol class="doc-nav-list"></ol>
+</nav>
+<div class="doc-nav-controls" aria-label="Section navigation">
+  <button class="doc-nav-step" type="button" data-direction="previous" aria-label="Previous section" title="Previous section">↑</button>
+  <button class="doc-nav-step" type="button" data-direction="top" aria-label="Back to top" title="Back to top">⌂</button>
+  <button class="doc-nav-step" type="button" data-direction="next" aria-label="Next section" title="Next section">↓</button>
+</div>
+
+<div class="wrap">
+
+<header id="top">
+  <div class="eyebrow">XR Collaboratory · Sprint proposal · Updated 6 Oct 2026 with build status</div>
+  <h1>Keys Copilot</h1>
+  <p class="lede">An AI arranging partner for a physical MIDI keyboard. I play a melody and ask for chords by voice; the AI writes them into Ableton Live, and while it plays, the chord notes it added light up on my own keys in mixed reality.</p>
+  <svg class="keys" viewBox="0 0 520 120" role="img" aria-label="Keyboard overlay during playback: the C major chord the AI added is lit, with the root C in orange and E and G in amber, each labeled with its note name; the melody key G5 that the user is playing is blue. Above the keys, the label reads C, then F as the next chord.">
+    <!-- 14 white keys, 37px each, C4 to B5. Chord C (root C4, E4, G4) lit; user's melody key G5 held. -->
+    <g>
+      <rect class="w root" x="1" y="1" width="36" height="96"/>
+      <rect class="w" x="38" y="1" width="36" height="96"/>
+      <rect class="w lit" x="75" y="1" width="36" height="96"/>
+      <rect class="w" x="112" y="1" width="36" height="96"/>
+      <rect class="w lit" x="149" y="1" width="36" height="96"/>
+      <rect class="w" x="186" y="1" width="36" height="96"/>
+      <rect class="w" x="223" y="1" width="36" height="96"/>
+      <rect class="w" x="260" y="1" width="36" height="96"/>
+      <rect class="w" x="297" y="1" width="36" height="96"/>
+      <rect class="w" x="334" y="1" width="36" height="96"/>
+      <rect class="w" x="371" y="1" width="36" height="96"/>
+      <rect class="w held" x="408" y="1" width="36" height="96"/>
+      <rect class="w" x="445" y="1" width="36" height="96"/>
+      <rect class="w" x="482" y="1" width="36" height="96"/>
+    </g>
+    <g>
+      <rect class="b" x="27" y="1" width="22" height="58"/>
+      <rect class="b" x="64" y="1" width="22" height="58"/>
+      <rect class="b" x="138" y="1" width="22" height="58"/>
+      <rect class="b" x="175" y="1" width="22" height="58"/>
+      <rect class="b" x="212" y="1" width="22" height="58"/>
+      <rect class="b" x="286" y="1" width="22" height="58"/>
+      <rect class="b" x="323" y="1" width="22" height="58"/>
+      <rect class="b" x="397" y="1" width="22" height="58"/>
+      <rect class="b" x="434" y="1" width="22" height="58"/>
+      <rect class="b" x="471" y="1" width="22" height="58"/>
+    </g>
+    <text class="nm bold" x="14" y="88">C</text>
+    <text class="nm" x="88" y="88">E</text>
+    <text class="nm" x="162" y="88">G</text>
+    <text class="nm on-held" x="421" y="88">G</text>
+    <text class="chord" x="1" y="115">C → F</text>
+    <text x="64" y="115">AI chord: root orange, chord tones amber · your melody: blue</text>
+  </svg>
+  <div class="meta">
+    <span><b>Author</b> Ruolan Chen (rc975)</span>
+    <span><b>Package</b> <span class="mono">xrc_students.keys_copilot.chen.rc975</span></span>
+    <span><b>Built on</b> XRC Core · XRC AI 0.6.0 · XRC Speech 0.1.1</span>
+    <span><b>Hardware</b> Meta Quest · Roland GO:KEYS 5 · Windows PC with Ableton Live 12 Suite</span>
+  </div>
+</header>
+
+<section>
+  <h2>Summary</h2>
+  <p>When you write music in a DAW, you keep switching between the instrument, the mouse and the screen. Keys Copilot lets you stay at the keyboard. The experience has two parts:</p>
+  <div class="parts">
+    <div class="part">
+      <div class="tag">Part A · Voice and agents</div>
+      <h3>Ask for chords</h3>
+      <p>With a single-note melody in Ableton, I say <i>"Add some chords to my melody."</i> The Studio Assistant agent reads the melody through a <b>tool call</b>, asks the <b>Arranger agent (used as a tool)</b> for a progression, writes it to the Chords track, and plays everything from bar 1.</p>
+    </div>
+    <div class="part">
+      <div class="tag">Part B · Mixed reality</div>
+      <h3>See the added notes</h3>
+      <p>While it plays, the notes of the sounding chord light up on my physical keys in passthrough, with note names, so I can see exactly which notes the AI added under my melody. The next chord is previewed one beat early.</p>
+    </div>
+  </div>
+  <p class="thesis" style="margin-top:16px">My hands are on the keys and my eyes are on the keys. Voice and AI replace the mouse. Mixed reality puts the information onto the keys.</p>
+</section>
+
+<section>
+  <h2>Status at a glance</h2>
+  <div class="tbl"><table>
+    <tr><th>Area</th><th>State</th><th>How it was checked</th></tr>
+    <tr><td>Part A: voice → agents → Ableton</td><td><span class="pill lo">Working</span></td><td>Editor play mode: the agent read the recorded melody, called the Arranger, and wrote a chord clip into Live</td></tr>
+    <tr><td>Part B: chord lights in sync with playback</td><td><span class="pill md">Built</span></td><td>Playhead stream verified against Live; lit keys equal written notes (unit test). Needs the on-device look</td></tr>
+    <tr><td>Passthrough and calibration</td><td><span class="pill md">Built</span></td><td>Two-corner width fitting, stable capture, four MIDI checks and startup review implemented. Physical alignment still requires Quest acceptance testing.</td></tr>
+    <tr><td>PC bridge</td><td><span class="pill lo">Working</span></td><td>Tested against a fake Ableton and against Live 12: tempo, write and read clips, playhead, key events</td></tr>
+    <tr><td>Music core</td><td><span class="pill lo">Tested</span></td><td>Regression tests cover parsing, voicing, note-gate playback, plan validation, quantization and calibration. See the dated calibration validation record below.</td></tr>
+    <tr><td>Android build, evaluation project, APK, video, docs</td><td><span class="pill hi">To do</span></td><td>Next, before the 1:1</td></tr>
+  </table></div>
+</section>
+
+<section>
+  <h2>Why AI, why XR</h2>
+  <p>I checked each part by asking what the project loses if that part is removed.</p>
+  <div class="tbl"><table>
+    <tr><th>Without…</th><th>What breaks</th></tr>
+    <tr><td>AI</td><td>Vague intent ("lo-fi", "funkier", "slower") no longer becomes concrete musical operations. I would have to know the theory and enter chords by hand. The agent reads the context (my melody and its key) and decides what to do.</td></tr>
+    <tr><td>XR</td><td>The added notes would only exist on a screen I have to look up at while playing. Only mixed reality can show "these are the notes under your melody" directly on the physical keys. PianoVision has already shown that on-key guidance works for learning.</td></tr>
+    <tr><td>Voice</td><td>Both hands are busy on the keys, so the only remaining input would be a mouse or a controller, and both take my hands off the instrument.</td></tr>
+  </table></div>
+</section>
+
+<section>
+  <h2>Demo script</h2>
+  <ol>
+    <li>Put on the headset (connected to the PC by USB). Passthrough shows the room and the GO:KEYS 5.</li>
+    <li>Calibrate the level keyboard: align the cyan crosshair with the LEFT FRONT OUTER white-key corner, hold still for 0.3 seconds and press left X; repeat at the RIGHT FRONT OUTER corner. Key spacing fits the measured span. Follow four MIDI checks, then press X only if the overlay visually aligns; left Y restarts. Saved positions require review each session.</li>
+    <li>The melody: Twinkle Twinkle, 4 bars, recorded in Ableton's Melody track. Alternatively, play it freely and say <i>"Play back what I just played"</i>; the AI saves the phrase with its tempo detected and plays it back.</li>
+    <li><b>Part A.</b> Hold A on the right controller and say <i>"Add some chords to my melody."</i> The status strip and trace show: listening → thinking → Arranger is writing chords → writing the arrangement to Ableton.</li>
+    <li><b>Part B.</b> Ableton plays melody and chords from bar 1. On the real keys, the sounding chord lights up with note names (root in orange), the next chord glows faintly one beat before it starts, and the label above the keys reads, for example, <i>C → F</i>. The assistant says what it played and tells me to watch the keys.</li>
+    <li>Say <i>"Make it an arpeggio"</i> or <i>"Make it funky."</i> The pattern changes and the lights follow the new clip.</li>
+    <li>Say <i>"How do I play the first chord?"</i> The chord stays lit for practice. Keys I play correctly turn green; wrong keys flash red.</li>
+  </ol>
+</section>
+
+<section>
+  <h2>Assignment requirements</h2>
+  <div class="tbl"><table>
+    <tr><th>Requirement</th><th>How it is met</th></tr>
+    <tr><td>XRC AI</td><td><code>AgentLogic</code> + <code>AgentDefinition</code> for the main <b>Studio Assistant</b> agent, through <code>ClientLogic</code> with the OpenAI provider (<code>gpt-5.4-mini</code>, shared by both agents)</td></tr>
+    <tr><td>XRC Speech</td><td><code>SpeechToTextLogic</code> for voice input and <code>TextToSpeechLogic</code> for spoken replies, push-to-talk (A starts, B stops on the right controller; keys 1 and 2 in the Editor). XRC Speech is the only voice layer.</td></tr>
+    <tr><td>Tool calls</td><td>11 tools in two <code>BaseTools</code> providers, <code>AbletonTools</code> and <code>KeyboardTools</code> (listed below)</td></tr>
+    <tr><td>Agents as tools</td><td>The <b>Arranger</b> agent is in the Studio Assistant's <code>Agents As Tools</code> list</td></tr>
+    <tr><td>Complete package</td><td>Runtime scripts, Editor setup menus, the Keys Copilot sample (agent definitions and scene), the PC bridge in <code>Bridge~</code>, tests and README. Installed into the evaluation project via Package Manager (git URL); the final APK is built there.</td></tr>
+  </table></div>
+</section>
+
+<section>
+  <h2>System architecture</h2>
+  <pre class="mermaid">
+flowchart LR
+  K["GO:KEYS 5"] -- USB MIDI --> L["Ableton Live 12"]
+  K -- USB MIDI --> B["keys_bridge.py (PC)"]
+  B -- "TCP/JSON over USB (adb reverse): key events, playhead ~20 Hz" --> Q
+  Q -- "TCP/JSON: whitelisted commands, play_from_start" --> B
+  B -- "TCP 127.0.0.1:9877" --> R["ableton-mcp Remote Script"]
+  R --> L
+  Q -. "Wi-Fi: internet only" .-> O["OpenAI: gpt-5.4-mini, Whisper, TTS"]
+  subgraph Q["Quest app (Unity)"]
+    S["XRC Speech STT/TTS"] --> M["Studio Assistant (XRC AI)"]
+    M --> T["AbletonTools / KeyboardTools"]
+    M --> AR["Arranger agent (agent as tool)"]
+    T --> F["Feedback: key overlay, chord follower, status strip"]
+  end
+  </pre>
+  <h3>Why there is a PC bridge</h3>
+  <p>This project uses a PC MIDI relay so MIDI input and Ableton control share one bridge. Direct USB/BLE MIDI on Quest is outside the tested deployment path; no universal platform-support claim is required for this design. The bridge is a small Python script that ships with the package. It streams key presses to the headset, pushes Ableton's playhead, and forwards a fixed whitelist of commands to Ableton.</p>
+  <h3>Wired link between headset and PC</h3>
+  <p>The headset connects to the PC with a USB-C cable, and the bridge runs <code>adb reverse tcp:9000 tcp:9000</code> whenever a headset is plugged in, so the app reaches the bridge at <code>127.0.0.1:9000</code>. This avoids two networks I can't control: my apartment's managed WhiteSky Wi-Fi and campus eduroam, which both block device-to-device traffic. The player sits at the keyboard anyway, so the cable costs nothing. <code>adb reverse</code> only carries TCP, so the headset and bridge exchange newline-delimited JSON over one connection, which also means no command is lost. Wi-Fi is used only to reach the OpenAI API. During development I run the scene from the Unity Editor over Quest Link.</p>
+  <h3>Ableton control</h3>
+  <ul>
+    <li><b>ableton-mcp Remote Script</b> (MIT), installed in Live's MIDI Remote Scripts folder: writes and reads clips, controls transport, tempo and the playhead. Its socket has no authentication, so it stays on loopback and only the bridge talks to it.</li>
+    <li>The bridge adds three helpers: <code>write_clip</code> (replace a clip in one step), <code>find_track</code> (tracks are found by name; on my set the Chords track turned out to be index 5, not 1) and <code>play_from_start</code> (stop, move the playhead to beat 0, launch the clips together).</li>
+    <li>File import and other risky commands are not on the whitelist.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Part A: agents and tools</h2>
+  <h3>Key design decision: the LLM chooses chords; code places the notes</h3>
+  <p>General-purpose LLMs are weak at rhythm and bar alignment (see the MusicTheoryBench and ChatMusician results). So the Arranger never outputs MIDI. It returns chord symbols and a pattern name. Deterministic C# code (<code>ChordVoicer</code>, <code>PatternLibrary</code>) turns them into pitches and timings, with smooth voice leading. Every note is on Ableton's grid, and the same plan always produces the same notes. Invalid plans return actionable validation errors. The agent may correct validation errors, but must not blindly retry a write with an unknown or partial outcome.</p>
+  <pre class="code">{ "key": "C major", "bpm": 85, "bars": 4, "pattern": "lofi",
+  "chords": [ {"bar":1,"symbol":"C"},
+              {"bar":2,"symbol":"F"},  {"bar":2,"beat":3,"symbol":"C"},
+              {"bar":3,"symbol":"F"},  {"bar":3,"beat":3,"symbol":"C"},
+              {"bar":4,"symbol":"G7"}, {"bar":4,"beat":3,"symbol":"C"} ] }</pre>
+  <p>Patterns: <code>block</code>, <code>pad</code>, <code>lofi</code>, <code>broken</code>, <code>arpeggio</code>, <code>stabs</code>.</p>
+  <h3>Two ways to get the melody</h3>
+  <ul>
+    <li><b>Recorded in Ableton</b> against the metronome: read back with <code>get_clip_notes</code>, already in beats.</li>
+    <li><b>Played freely</b>, no metronome: <code>CaptureMelody</code> takes the last phrase from the live key stream and infers the tempo. A rough tempo from the median gap between notes is refined over all notes at once (search within ±15%, then least squares), so timing errors don't accumulate; notes snap to an eighth-note grid. A human-timed Twinkle comes out at 86 BPM with every note on its beat. It never overwrites a clip I recorded in Ableton without asking.</li>
+  </ul>
+  <div class="tbl"><table>
+    <tr><th>Tool</th><th>Provider</th><th>Purpose</th></tr>
+    <tr><td><code>GetRecordedMelody()</code></td><td>AbletonTools</td><td>The melody bar by bar, with tempo, meter and an estimated key (Krumhansl–Schmuckler)</td></tr>
+    <tr><td><code>CaptureMelody(useAbletonTempo, replaceRecording)</code></td><td>AbletonTools</td><td>Saves what I just played as the Melody clip, tempo detected</td></tr>
+    <tr><td><code>WriteArrangement(planJson)</code></td><td>AbletonTools</td><td>Validates and voices the plan, replaces the Chords clip, plays from bar 1</td></tr>
+    <tr><td><code>PlayMelody()</code>, <code>Play()</code>, <code>Stop()</code>, <code>SetTempo(bpm)</code></td><td>AbletonTools</td><td>Melody alone, melody with chords from bar 1, stop, tempo</td></tr>
+    <tr><td><code>HighlightKeys(what, includeBass)</code>, <code>ClearHighlights()</code></td><td>KeyboardTools</td><td>Practice highlights for a chord symbol, notes, or "bar N" of the last arrangement</td></tr>
+    <tr><td><code>GetLastPlayedNotes(seconds)</code></td><td>KeyboardTools</td><td>Describes live playing and names chords ("what chord is this?")</td></tr>
+    <tr><td><code>StartCalibration()</code></td><td>KeyboardTools</td><td>Starts overlay calibration by voice</td></tr>
+    <tr><td><b>Arranger</b></td><td>Agent as tool</td><td>Melody + key + style → chord plan JSON</td></tr>
+  </table></div>
+  <p>Tool calls arrive on background threads, so anything that touches the scene goes through <code>MainThreadUtility.Invoke</code>.</p>
+</section>
+
+<section>
+  <h2>Part B: how the lights stay in time</h2>
+  <ol>
+    <li>Every playback goes through <code>play_from_start</code>: the bridge stops Live, moves the playhead to beat 0, and launches the melody and chord clips together. The position in the arrangement is then the song beat modulo the arrangement length.</li>
+    <li>ableton-mcp has no playhead listener, so the bridge reads the playhead about 20 times a second while playing and pushes <code>{playing, beat, tempo}</code> to the headset.</li>
+    <li><code>BridgeClient</code> advances the beat between updates using the tempo, so the lights don't step.</li>
+    <li><code>ArrangementPlan.Voice()</code> gives each chord's span and the exact pitches written to Live, including the bass. <code>ArrangementFollower</code> lights those keys, so what lights up is what sounds. A unit test checks that lit keys equal written notes for every chord.</li>
+  </ol>
+  <div class="tbl"><table>
+    <tr><th>On the keys</th><th>Meaning</th></tr>
+    <tr><td><span class="sw root"></span>Orange, bold note name</td><td>Root of the chord that is sounding</td></tr>
+    <tr><td><span class="sw lit"></span>Amber, note name</td><td>Other notes the AI added, including the left-hand bass</td></tr>
+    <tr><td><span class="sw faint"></span>Faint amber</td><td>The next chord, one beat before it starts</td></tr>
+    <tr><td><span class="sw held"></span>Blue</td><td>A key I'm pressing (my melody)</td></tr>
+    <tr><td><span class="sw ok"></span>Green / <span class="sw bad"></span>red</td><td>Practice mode only: a highlighted key I hit / a key outside the chord. During playback my melody notes are never marked wrong.</td></tr>
+  </table></div>
+  <p>Above the keys, a label shows the current and next chord (<i>C → F</i>).</p>
+</section>
+
+<section>
+  <h2>Feedback layer</h2>
+  <p>XRC AI's <code>AgentEvents</code> reports agent runs but not tool calls, so my tools raise their own <code>toolInvoked</code>, <code>toolCompleted</code> and <code>toolFailed</code> events. Feedback components subscribe through UnityEvents; XRC AI and XRC Speech are not modified.</p>
+  <div class="tbl"><table>
+    <tr><th>Component</th><th>Shows</th></tr>
+    <tr><td><code>CopilotStatusFeedback</code></td><td>A light strip above the keys for listening, thinking, working, speaking, error and offline, pulsing while waiting; a caption of what was heard; a trace of agent and tool calls (Studio Assistant → Arranger → WriteArrangement) so tool calls and agents as tools are visible in a demo</td></tr>
+    <tr><td><code>KeyboardVisualizer</code></td><td>The 61-key overlay: colors and note names from the table above</td></tr>
+    <tr><td><code>ArrangementFollower</code></td><td>Part B: the sounding chord, the preview of the next one, and the chord label</td></tr>
+    <tr><td><code>KeyboardCalibration</code></td><td>Calibration input and session review; KeyboardCalibrationLogic fits width, CalibrationPointSampler rejects unstable capture, KeyboardCalibrationVerification checks four MIDI pitches, and KeyboardCalibrationFeedback shows the crosshair and instructions.</td></tr>
+  </table></div>
+</section>
+
+<section>
+  <h2>Problems found and fixed while building</h2>
+  <div class="tbl"><table>
+    <tr><th>Problem</th><th>Cause</th><th>Fix</th></tr>
+    <tr><td>Speech came back as just "you"</td><td>Windows had made the keyboard's USB audio input the default microphone; Whisper invents "you" for near-silence</td><td>Set the Windows input to the laptop or headset microphone; on Quest the headset microphone is used</td></tr>
+    <tr><td>The agent said "please hold on" and stopped</td><td>The default <code>gpt-4o-mini</code> announced tool use without calling the tools</td><td>Prompt rule "act, don't announce", and <code>gpt-5.4-mini</code></td></tr>
+    <tr><td>Status feedback lost after saving the scene</td><td>UnityEvent listeners added from code to prefab instances weren't recorded as prefab overrides</td><td><code>PrefabUtility.RecordPrefabInstancePropertyModifications</code> in the setup menu</td></tr>
+    <tr><td>Scene setup crashed</td><td><code>AgentEvents</code> leaves its UnityEvents null when added from code</td><td>Initialize them; the setup runs as one undo group and rolls back on failure</td></tr>
+    <tr><td>Calibration points off by centimeters</td><td>A controller's tracked origin is inside the grip, not at the tip</td><td>A thin visible crosshair marks the sampled point; capture requires a stable sample window.</td></tr>
+    <tr><td>Calibration started voice recording</td><td>A on the right controller also starts XRC Speech recording</td><td>Calibration uses X on the left controller</td></tr>
+    <tr><td>Chords written to the wrong track</td><td>Live's track order isn't fixed (Chords was index 5)</td><td>Tracks are found by name</td></tr>
+    <tr><td>Free playing drifted half a beat by bar 3</td><td>Tempo from the median note gap alone</td><td>Tempo fitted over all notes (search, then least squares)</td></tr>
+  </table></div>
+</section>
+
+<section>
+  <h2>Related work</h2>
+  <div class="tbl"><table>
+    <tr><th>Product</th><th>Has</th><th>Lacks</th></tr>
+    <tr><td>PianoVision (Quest)</td><td>MR overlay on a real piano, live MIDI input</td><td>No AI composition, no DAW</td></tr>
+    <tr><td>ableton-mcp</td><td>An LLM drives Live: clips, notes, instruments</td><td>Desktop text chat only. No instrument in the loop, no XR, no voice.</td></tr>
+    <tr><td>Scaler 3, Captain Chords, Orb Producer</td><td>Strong theory and context-aware chord suggestions</td><td>Mouse-driven plugin UIs, not conversational</td></tr>
+    <tr><td>Live 12 MIDI Generators</td><td>Scale-aware generative MIDI tools</td><td>Parameters are set by hand, with no natural-language input</td></tr>
+  </table></div>
+  <p>None of these connects playing, talking, the DAW and on-key guidance in one loop. That combination is what Keys Copilot adds.</p>
+</section>
+
+<section>
+  <h2>Risks</h2>
+  <div class="tbl"><table>
+    <tr><th>Risk</th><th>Level now</th><th>Mitigation</th></tr>
+    <tr><td>IL2CPP strips Microsoft.Extensions.AI and Microsoft.Agents.AI (works in the Editor, fails on device)</td><td><span class="pill hi">High</span></td><td>Not tested yet: the Android build is the next step; extend <code>link.xml</code> if needed</td></tr>
+    <tr><td>Overlay doesn't sit exactly on the keys</td><td><span class="pill md">Medium</span></td><td>Measure outer keybed corners, fit horizontal spacing, check left/middle/right/black keys and confirm visually. Y restarts; saved world poses must be reviewed. Device accuracy remains unmeasured.</td></tr>
+    <tr><td>Lights out of step with the sound</td><td><span class="pill md">Medium</span></td><td>Start through the agent; highlights follow rendered MIDI note gates and fresh transport. Sequential clip launches still require measured audio/visual synchronization in Live.</td></tr>
+    <tr><td>End-to-end voice latency of several seconds</td><td><span class="pill md">Medium</span></td><td>Status strip, caption and trace show progress; music starts as soon as the clip is written</td></tr>
+    <tr><td>Free playing has no bar grid</td><td><span class="pill lo">Low</span></td><td>Record against the metronome, or CaptureMelody's tempo fit</td></tr>
+    <tr><td>LLM output with broken rhythm or wrong pitches</td><td><span class="pill lo">Low</span></td><td>Chord symbols only; validated plan with actionable errors</td></tr>
+    <tr><td>Overwriting a melody I recorded</td><td><span class="pill lo">Low</span></td><td>CaptureMelody refuses unless I confirm</td></tr>
+    <tr><td>Octave shift on the GO:KEYS moves notes off the overlay</td><td><span class="pill lo">Low</span></td><td>Four MIDI checks detect an unexpected mapping, including shifts still inside the overlay range. The user checks octave/transpose and routing; no offset is silently learned.</td></tr>
+    <tr><td>Network isolation (WhiteSky, eduroam)</td><td><span class="pill lo">Resolved</span></td><td>USB with <code>adb reverse</code>; the bridge re-applies it when the headset reconnects</td></tr>
+    <tr><td>Clip slot already full; track indices</td><td><span class="pill lo">Resolved</span></td><td><code>write_clip</code> replaces; <code>find_track</code> by name</td></tr>
+  </table></div>
+</section>
+
+<section>
+  <h2>Plan and status</h2>
+  <div>
+    <div class="phase"><div class="n">P0</div><div><b>Connectivity</b><span>Remote Script and bridge installed; a tempo change from the bridge reaches Live.</span></div><span class="pill lo">Done</span></div>
+    <div class="phase"><div class="n">P1</div><div><b>Device build</b><span>Android build on Quest; confirm XRC AI survives IL2CPP, passthrough, adb reverse.</span></div><span class="pill hi">Next</span></div>
+    <div class="phase"><div class="n">P2</div><div><b>Ableton tools</b><span>AbletonTools, ChordVoicer, PatternLibrary, CaptureMelody; tools raise events.</span></div><span class="pill lo">Done</span></div>
+    <div class="phase"><div class="n">P3</div><div><b>Agent as tool</b><span>Arranger agent, prompts, status strip and trace.</span></div><span class="pill lo">Done</span></div>
+    <div class="phase"><div class="n">P4</div><div><b>Keyboard in XR</b><span>Key stream, 61-key overlay, practice highlights, chord follower with note names and preview.</span></div><span class="pill lo">Done in Editor</span></div>
+    <div class="phase"><div class="n">P5</div><div><b>MR</b><span>Passthrough and measured-width calibration implemented; four-key validation and startup review added. Device acceptance remains pending.</span></div><span class="pill md">In progress</span></div>
+    <div class="phase"><div class="n">P6</div><div><b>Package and submit</b><span>Merge to main, evaluation project and APK, video, documentation site, write-up, sprint slides.</span></div><span class="pill md">In progress</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>Future work</h2>
+  <div class="tbl"><table>
+    <tr><th>Next step</th><th>What it adds</th><th>How the current design prepares for it</th></tr>
+    <tr><td>Sound per style</td><td>"Lo-fi" also changes the instrument and effects (Rhodes, low-pass, reverb), so style changes are clearly audible</td><td>The bridge whitelist already allows loading browser items</td></tr>
+    <tr><td>Wireless link</td><td>No cable between headset and PC</td><td>One TCP/JSON connection; only the address changes (a private network plus discovery of the bridge)</td></tr>
+    <tr><td>Realtime voice mode</td><td>Speech-to-speech with about a second of latency</td><td>Tools and the Arranger don't depend on the voice layer. Push-to-talk stays, because music in the room would trigger voice detection</td></tr>
+    <tr><td>Mixer agent</td><td>A second agent as tool for mix changes on devices already on a track</td><td>Same pattern as the Arranger</td></tr>
+    <tr><td>Live accompaniment</td><td>The AI follows while I play and harmonizes as I go</td><td>Reuses the key stream, CaptureMelody and ChordVoicer</td></tr>
+  </table></div>
+</section>
+
+<section class="questions">
+  <h2>Questions for Harald</h2>
+  <ol>
+    <li><b>Wired tether:</b> is it acceptable for the demo and the evaluation build to keep the headset connected to the PC by USB (<code>adb reverse</code>), with wireless as future work?</li>
+    <li><b>Scope:</b> do Part A (voice → agents → Ableton) and Part B (chord notes lit on the real keys during playback) meet the bar for a complete package?</li>
+    <li><b>Third-party pieces:</b> is it acceptable for the package to depend on the ableton-mcp Remote Script (MIT) and to ship a small Python bridge with installation instructions?</li>
+    <li><b>Evaluation setup:</b> the demo needs a PC running Ableton with the headset connected. Is that acceptable for the evaluation build, or should there also be a headset-only mode?</li>
+    <li><b>APK naming:</b> which naming convention should the submitted APK follow?</li>
+  </ol>
+</section>
+
+<section id="keyboard-alignment">
+  <h2>GO:KEYS alignment — implementation review, 6 October 2026</h2>
+  <p><b>Decision:</b> use MIDI for note identity, measured manual calibration for keyboard placement, and a procedural key overlay for feedback. No camera recognition or GO:KEYS body model is required for this MVP. MIDI checks verify the configured pitch mapping; only the user can confirm spatial alignment in this implementation.</p>
+  <div class="tbl"><table>
+    <tr><th>Implemented now</th><th>Behavior and boundary</th></tr>
+    <tr><td>Two explicit outer corners</td><td>Sample the top front-left OUTER corner of the first white key and the top front-right OUTER corner of the last, with keys unpressed. Do not sample the case or key centers.</td></tr>
+    <tr><td>Measured horizontal spacing</td><td>White-key pitch = horizontal outer-edge span / white-key count: span / 36 for the default 61-key C-to-C layout. Center-to-center endpoints would require /35 and a half-key offset; that endpoint convention is not implemented.</td></tr>
+    <tr><td>Stable capture and thin crosshair</td><td>At least six recent samples spanning 0.18 s within a 0.30 s window, with each sample within 3 mm of their mean. Moving or insufficient samples request a retry. This reduces jitter, not systematic tracking or pointer-offset error.</td></tr>
+    <tr><td>Level-keyboard guard</td><td>Reject endpoint height differences over 8 mm and fitted spacing outside 18–30 mm. Both ends must be white keys; at least one octave is required. The 61-key default is MIDI 36–96 and is checked against actual input.</td></tr>
+    <tr><td>Four MIDI checks + visual acceptance</td><td>Default sequence: leftmost white C2 (36), middle white F4 (65), rightmost white C7 (96), leftmost black C#2 (37). Cyan marks the requested key; held keys are blue. Wrong pitches do not advance. After all four, X confirms visual alignment and saves; Y restarts.</td></tr>
+    <tr><td>Session review</td><td>Store pose, measured key pitch and MIDI range in a versioned local profile. Old pose-only data is ignored. On restart, show the saved outline for review: X begins the four checks; Y recalibrates. A saved pose is not a spatial anchor.</td></tr>
+  </table></div>
+  <p><b>Limits:</b> two points do not determine a full plane. This version assumes a level keyboard and does not detect front-to-back tilt. White/black key depths and black-key offsets remain approximate; width fitting alone cannot correct them. A moved keyboard or changed tracking origin requires recalibration. No automatic tracking-loss/recenter recovery, fine-adjustment UI, third-point mode, persistent spatial anchor or camera localization is implemented.</p>
+  <p><b>Next stages:</b> first measure on-device alignment at left, middle and right, including black keys; then add a third non-collinear point for tilted keyboards and a provider-supported persistent anchor with localization failure fallback. An anchor fixed in the room does not follow a moved keyboard. If automatic localization becomes necessary, evaluate a fixed AprilTag with a measured tag-to-keybed transform. Quest 3/3S camera access is available with the documented permissions; choosing manual calibration is a scope decision.</p>
+</section>
+
+<section id="calibration-testing">
+  <h2>How to test this build</h2>
+  <ol class="steps">
+    <li><b>Editor regression:</b> open the implementation project; Window → General → Test Runner → EditMode. Run the <code>xrc_students.keys_copilot.chen.rc975.Tests</code> assembly. Include KeyboardCalibrationLogicTests, CalibrationPointSamplerTests and KeyboardCalibrationVerificationTests.</li>
+    <li><b>Input:</b> connect GO:KEYS by USB, start <code>Bridge~/.venv/Scripts/python keys_bridge.py</code>, and check the MIDI input log. Ableton reachability is needed for arranging but not for the four spatial-calibration MIDI checks. Stop Ableton playback while checking alignment.</li>
+    <li><b>Quest:</b> build/run the Keys Copilot scene with passthrough. Existing scenes gain calibration feedback automatically; no scene regeneration is needed. Verify KeyboardCalibration references the overlay and tracked right controller, Camera has the MainCamera tag, and the overlay hierarchy has unit scale.</li>
+    <li><b>Calibrate:</b> keep the keyboard level. Align the right-controller crosshair with the left outer corner, hold still 0.3 seconds, press left X; repeat on the right outer corner. Follow MIDI 36 → 65 → 96 → 37, release each key, inspect white and black alignment, then X to confirm. Press Y at any point to restart. Right A/B remain start/stop speech.</li>
+    <li><b>Negative tests:</b> press X while moving the pointer (retry); sample the same corner twice (reject); use different corner heights over 8 mm (reject); press a wrong or octave-shifted MIDI pitch (stay on the same check). Recalibrating must leave status and chord-label objects intact.</li>
+    <li><b>Restart:</b> close/reopen the app. The saved pose must be shown as a preview requiring review, not automatically trusted. Move the keyboard or recenter, then press Y and repeat calibration. To check rejection without overwriting a good profile, exit before final confirmation.</li>
+    <li><b>End-to-end:</b> each Ableton MIDI track needs an instrument, and Melody slot 1 needs the recorded 4-bar melody. Request simple chords, then practice the first chord. Verify audio, written notes, MR lights and return from practice to playback. Hearing only the metronome is an audio/clip-routing issue, separate from spatial calibration.</li>
+  </ol>
+  <p><b>Validation record:</b> Unity 6000.4.11f1 EditMode: 87 passed, 0 failed (6 October 2026); PC bridge fake-Live regressions: 14 passed. The package Runtime, Editor and Tests assemblies compile. Physical Quest alignment, audio/visual timing and Android IL2CPP acceptance are not yet measured. HTML content and structure checked statically; browser rendering preview was unavailable because local file URLs are blocked by the browser tool.</p>
+  <p><b>Device acceptance target:</b> record repeatability across three calibrations and inspect left/middle/right plus black keys. A suggested target is no adjacent-key overlap and estimated center error below 5 mm at the checked positions. This is an acceptance target, not a measured accuracy claim. Record calibration time and remaining front/back or black-key errors.</p>
+</section>
+
+<section id="references">
+  <h2>References</h2>
+  <p>Each source has one sentence explaining its role in the project; camera-based localization and persistent anchors remain future work, while passthrough display is part of the current design.</p>
+  <h3>Mixed Reality Display and Demo Capture</h3>
+  <ul class="refs">
+    <li><a href="https://developers.meta.com/horizon/documentation/unity/unity-passthrough/">Meta: Unity Passthrough</a> — I use this guide to configure passthrough so players can see their physical keyboard beneath the virtual key overlay.</li>
+    <li><a href="https://docs.unity3d.com/Packages/com.unity.xr.meta-openxr@2.5/manual/features/camera.html">Unity: Meta OpenXR Camera Feature (2.5)</a> — I use this reference to check the Meta OpenXR camera subsystem settings required to display passthrough through AR Foundation.</li>
+    <li><a href="https://developers.meta.com/horizon/documentation/unity/ts-mqdh-media/">Meta: MQDH Media — Cast and Record</a> — I use this guide to plan headset casting and recording for debugging, evaluation, and the project demonstration.</li>
+  </ul>
+  <h3>Keyboard Hardware and MIDI</h3>
+  <ul class="refs">
+    <li><a href="https://www.roland.com/global/products/gokeys_5/">Roland: GO:KEYS 5 Specifications</a> — I use these specifications to confirm the keyboard hardware while keeping the case dimensions separate from the measured keybed width.</li>
+    <li><a href="https://www.roland.com/global/support/by_product/gokeys_5/owners_manuals/">Roland: GO:KEYS 5 Owner Manuals</a> — I use these manuals to check keyboard settings, transpose behavior, and USB connections when validating the physical-key-to-MIDI mapping.</li>
+    <li><a href="https://www.roland.com/us/products/gokeys_5/support/">Roland: GO:KEYS 5 Support</a> — I use this support page to find official drivers, updates, and troubleshooting information for the keyboard used in the project.</li>
+    <li><a href="https://support.roland.com/hc/en-us/articles/23556989696411-GO-KEYS-5-GO-KEYS-3-Can-I-use-the-keyboard-as-a-MIDI-sound-module-with-a-DAW">Roland: Using GO:KEYS 5 as a MIDI Sound Module with a DAW</a> — I use this article to check MIDI channel requirements and sound-module limitations when considering playback through the GO:KEYS 5.</li>
+    <li><a href="https://midi.org/midi-1-0-detailed-specification">MIDI Association: MIDI 1.0 Detailed Specification</a> — I use this specification as the protocol reference for interpreting note-on, note-off, velocity, and control-change messages in the bridge.</li>
+  </ul>
+  <h3>Ableton Integration</h3>
+  <ul class="refs">
+    <li><a href="https://help.ableton.com/hc/en-us/articles/209072009">Ableton: Installing Third-Party Remote Scripts</a> — I use this guide to install and activate the Remote Script that connects Ableton Live to the project bridge.</li>
+    <li><a href="https://github.com/ahujasid/ableton-mcp">ableton-mcp: Remote Script and Integration</a> — I use this implementation as the upstream interface for reading and writing MIDI clips and controlling Ableton transport through the bridge.</li>
+  </ul>
+  <h3>Spatial Alignment and Future Localization</h3>
+  <ul class="refs">
+    <li><a href="https://developers.meta.com/horizon/documentation/unity/unity-pca-overview/">Meta: Passthrough Camera API Overview</a> — I use this reference to assess camera access and permission requirements for future visual keyboard localization.</li>
+    <li><a href="https://developers.meta.com/vr/documentation/unity/unity-spatial-anchors-persist-content/">Meta: Spatial Anchors</a> — I use this guide to plan persistent keyboard placement with anchor saving, loading, and localization checks in a future version.</li>
+    <li><a href="https://docs.unity3d.com/Packages/com.unity.xr.arfoundation@6.1/manual/features/anchors/introduction.html">Unity: AR Foundation Anchors</a> — I use this reference to understand anchor lifecycles and provider support before choosing a persistence API for the Unity project.</li>
+    <li><a href="https://github.com/AprilRobotics/apriltag">AprilTag 3: Official Repository</a> — I use this implementation to evaluate a fixed visual marker as a future method for estimating the keyboard pose.</li>
+  </ul>
+  <h3>Code Quality and Architecture</h3>
+  <ul class="refs">
+    <li><a href="https://xrcollaboratory.github.io/xrc-toolkit/code-style/">XRC: Code Style</a> — I use this guide to keep serialized fields, naming, properties, and formatting consistent with XRC expectations.</li>
+    <li><a href="https://xrcollaboratory.github.io/xrc-toolkit/design-patterns/">XRC: Design Patterns</a> — I use these resources to guide the separation of input handling, calibration logic, and visual feedback into maintainable components.</li>
+  </ul>
+  <h3>Related Work, Research, and Historical Context</h3>
+  <ul class="refs">
+    <li><a href="https://uploadvr.com/pianovision-impressions-quest-2/">PianoVision Impressions — UploadVR</a> — I use this review as background when comparing the project with an existing mixed-reality piano-learning experience.</li>
+    <li><a href="https://help.ableton.com/hc/en-us/articles/11535349458588">Ableton: MIDI Tools and Device Updates in Live 12</a> — I use this overview to compare the proposed voice-driven arranging workflow with the MIDI generation and transformation tools already available in Live.</li>
+    <li><a href="https://musictech.com/reviews/plug-ins/scaler-3-review/">Scaler 3 Review — MusicTech</a> — I use this review as background when comparing the project with an existing chord-assistance workflow.</li>
+    <li><a href="https://arxiv.org/abs/2507.12808v1">Large Language Models&#x27; Internal Perception of Symbolic Music</a> — I use this paper to frame the potential and limitations of language models for symbolic music and motivate explicit musical validation.</li>
+    <li><a href="https://communityforums.atmeta.com/discussions/dev-unity/does-oculus-quest-support-android-media-midi-and-other-ble-communication-protoco/780267">Meta Community: Historical Android MIDI and BLE Discussion</a> — I keep this historical discussion as background on MIDI connectivity questions rather than evidence of current Quest platform support.</li>
+  </ul>
+  <p class="small">Updated 6 October 2026; versioned Unity documentation must be matched to the installed packages, and the two product reviews and historical forum thread are retained as background because their full text could not be revalidated in this update.</p>
+</section>
+
+<footer>Proposal and build status by Ruolan Chen (rc975), XR Collaboratory, Fall 2026. Updated 6 October 2026 for instructor review.</footer>
+</div>
+
+<!--claude-mermaid-runtime-begin:3477-->
+<style>.mermaid-diagram{margin-block:4px}.mermaid-diagram svg{display:block;margin:0 auto;max-width:100%;height:auto}</style>
+<script src="/_runtime/mermaid-11.16.1.min.js"></script>
+<script>(function(){
+var CFG={"palettes":{"light":{"surface":"#f4efe4","text":"#42392e","line":"#8a7f6d","border":"#7a6c52","bg":"#fffdf8"},"dark":{"surface":"#262b34","text":"#f2f3f5","line":"#a8adb8","border":"#9aa4b8","bg":"#1f232b"}}};
+if(typeof mermaid==='undefined')return;
+var pres=Array.prototype.slice.call(document.querySelectorAll('pre.mermaid')).filter(function(p){if(p.hasAttribute('data-claude-mermaid-claimed'))return false;p.setAttribute('data-claude-mermaid-claimed','1');return true;});
+if(!pres.length)return;
+var mq=window.matchMedia?window.matchMedia('(prefers-color-scheme: dark)'):null;
+var root=document.documentElement;
+var items=pres.map(function(pre){
+var mount=document.createElement('div');mount.className='mermaid-diagram';
+return {pre:pre,mount:mount,src:pre.textContent||''};
+});
+var seq=0;
+var renderGen=0;
+var lastKey='';
+function pageBg(fallback){
+var els=[document.body,document.documentElement];
+for(var i=0;i<els.length;i++){
+var c=els[i]&&getComputedStyle(els[i]).backgroundColor;
+if(c&&c!=='transparent'&&c!=='rgba(0, 0, 0, 0)')return c;
+}
+return fallback;
+}
+function render(){
+var theme=root.getAttribute('data-theme');
+var dark=theme==='dark'||(!!(mq&&mq.matches)&&theme!=='light');
+var pal=dark?CFG.palettes.dark:CFG.palettes.light;
+var bg=pageBg(pal.bg);
+var key=(dark?'d':'l')+'|'+bg;
+if(key===lastKey)return;
+lastKey=key;
+var gen=++renderGen;
+var font=getComputedStyle(document.body).fontFamily||'sans-serif';
+var nat={useMaxWidth:false};
+mermaid.initialize({
+startOnLoad:false,securityLevel:'strict',theme:'base',
+flowchart:nat,sequence:nat,er:nat,state:nat,class:nat,pie:nat,
+gantt:nat,journey:nat,timeline:nat,gitGraph:nat,mindmap:nat,xyChart:nat,
+quadrantChart:nat,sankey:nat,c4:nat,requirement:nat,block:nat,
+packet:nat,kanban:nat,architecture:nat,radar:nat,
+themeVariables:{background:bg,mainBkg:pal.surface,primaryColor:pal.surface,
+primaryTextColor:pal.text,lineColor:pal.line,primaryBorderColor:pal.border,
+nodeBorder:pal.border,clusterBorder:pal.border,edgeLabelBackground:bg,
+clusterBkg:'rgba(127,127,127,0.07)',titleColor:pal.text,
+darkMode:dark,rowOdd:bg,rowEven:'rgba(127,127,127,0.07)',
+attributeBackgroundColorOdd:bg,attributeBackgroundColorEven:'rgba(127,127,127,0.07)',
+fontSize:'16px',fontFamily:font},
+themeCSS:'.node rect, .node circle, .node polygon, .node path, .cluster rect { stroke-width: 2px; }'
+});
+items.forEach(function(it){
+var id='claude-mermaid-'+seq++;
+mermaid.render(id,it.src).then(function(r){
+if(gen!==renderGen)return;
+var prev=it.pre.previousElementSibling;
+if(prev&&prev.className==='mermaid-diagram'&&prev!==it.mount)return;
+it.mount.innerHTML=r.svg;
+if(!it.mount.parentNode)it.pre.parentNode.insertBefore(it.mount,it.pre);
+it.pre.style.display='none';
+},function(){
+var scratch=document.getElementById(id);
+if(scratch)scratch.parentNode.removeChild(scratch);
+scratch=document.getElementById('d'+id);
+if(scratch)scratch.parentNode.removeChild(scratch);
+if(gen!==renderGen)return;
+if(it.mount.parentNode)it.mount.parentNode.removeChild(it.mount);
+it.pre.style.display='';
+});
+});
+}
+render();
+if(mq&&mq.addEventListener)mq.addEventListener('change',render);
+if(typeof MutationObserver!=='undefined')new MutationObserver(render).observe(root,{attributes:true,attributeFilter:['data-theme']});
+})();</script>
+<!--claude-mermaid-runtime-end-->
+
+<script>
+(function () {
+  var toggle = document.querySelector('.doc-nav-toggle');
+  var panel = document.querySelector('.doc-nav-panel');
+  var scrim = document.querySelector('.doc-nav-scrim');
+  var list = document.querySelector('.doc-nav-list');
+  var progress = document.querySelector('.doc-nav-progress span');
+  var sections = Array.prototype.slice.call(document.querySelectorAll('.wrap > section'));
+
+  function slugify(text) {
+    return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'section';
+  }
+
+  var used = {};
+  sections.forEach(function (section, index) {
+    var heading = section.querySelector('h2');
+    if (!heading) return;
+    var base = section.id || slugify(heading.textContent);
+    var id = base;
+    while (used[id] || (document.getElementById(id) && document.getElementById(id) !== section)) id = base + '-' + (index + 1);
+    used[id] = true;
+    section.id = id;
+    var item = document.createElement('li');
+    var link = document.createElement('a');
+    link.href = '#' + id;
+    link.textContent = heading.textContent;
+    link.dataset.sectionIndex = index;
+    item.appendChild(link);
+    list.appendChild(item);
+  });
+
+  var links = Array.prototype.slice.call(list.querySelectorAll('a'));
+  var current = 0;
+
+  function setOpen(open) {
+    panel.hidden = !open;
+    scrim.hidden = !open;
+    toggle.setAttribute('aria-expanded', String(open));
+    toggle.textContent = open ? '× Close' : '☰ Sections';
+    if (open) {
+      var active = links[current] || links[0];
+      if (active) active.focus({ preventScroll: true });
+    } else toggle.focus({ preventScroll: true });
+  }
+
+  function updateCurrent(index) {
+    current = Math.max(0, Math.min(index, sections.length - 1));
+    links.forEach(function (link, i) {
+      if (i === current) link.setAttribute('aria-current', 'location');
+      else link.removeAttribute('aria-current');
+    });
+    document.querySelector('[data-direction="previous"]').disabled = current === 0;
+    document.querySelector('[data-direction="next"]').disabled = current === sections.length - 1;
+  }
+
+  function goTo(index) {
+    updateCurrent(index);
+    sections[current].scrollIntoView({ behavior: 'smooth', block: 'start' });
+    history.replaceState(null, '', '#' + sections[current].id);
+  }
+
+  toggle.addEventListener('click', function () { setOpen(panel.hidden); });
+  scrim.addEventListener('click', function () { setOpen(false); });
+  list.addEventListener('click', function (event) {
+    var link = event.target.closest('a');
+    if (!link) return;
+    event.preventDefault();
+    var index = Number(link.dataset.sectionIndex);
+    setOpen(false);
+    goTo(index);
+  });
+  document.querySelector('.doc-nav-controls').addEventListener('click', function (event) {
+    var button = event.target.closest('button');
+    if (!button) return;
+    if (button.dataset.direction === 'top') {
+      document.getElementById('top').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      history.replaceState(null, '', '#top');
+      updateCurrent(0);
+    } else goTo(current + (button.dataset.direction === 'next' ? 1 : -1));
+  });
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' && !panel.hidden) setOpen(false);
+  });
+
+  if ('IntersectionObserver' in window) {
+    var observer = new IntersectionObserver(function (entries) {
+      var visible = entries.filter(function (entry) { return entry.isIntersecting; }).sort(function (a, b) { return a.boundingClientRect.top - b.boundingClientRect.top; });
+      if (visible.length) updateCurrent(sections.indexOf(visible[0].target));
+    }, { rootMargin: '-12% 0px -72% 0px', threshold: 0 });
+    sections.forEach(function (section) { observer.observe(section); });
+  }
+
+  function updateProgress() {
+    var height = document.documentElement.scrollHeight - window.innerHeight;
+    progress.style.width = (height > 0 ? Math.min(100, window.scrollY / height * 100) : 100) + '%';
+  }
+  window.addEventListener('scroll', updateProgress, { passive: true });
+  updateCurrent(Math.max(0, sections.findIndex(function (section) { return '#' + section.id === location.hash; })));
+  updateProgress();
+}());
+</script>
+
+</body></html>
